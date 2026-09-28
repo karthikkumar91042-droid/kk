@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block title %}Manage Bookings - Admin{% endblock %}
+{% block content %}
+<div class="admin-wrapper">
+    <aside class="admin-sidebar">
+        <div class="admin-brand"><i class="fas fa-cogs"></i> Admin Panel</div>
+        <nav class="admin-nav">
+            <a href="{{ url_for('admin.dashboard') }}" class="admin-nav-link"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+            <a href="{{ url_for('admin.buses') }}" class="admin-nav-link"><i class="fas fa-bus"></i> Buses</a>
+            <a href="{{ url_for('admin.routes') }}" class="admin-nav-link"><i class="fas fa-route"></i> Routes</a>
+            <a href="{{ url_for('admin.schedules') }}" class="admin-nav-link"><i class="fas fa-calendar-alt"></i> Schedules</a>
+            <a href="{{ url_for('admin.bookings') }}" class="admin-nav-link active"><i class="fas fa-ticket-alt"></i> Bookings</a>
+            <a href="{{ url_for('admin.users') }}" class="admin-nav-link"><i class="fas fa-users"></i> Users</a>
+        </nav>
+    </aside>
+    <div class="admin-content">
+        <div class="admin-topbar">
+            <h1><i class="fas fa-ticket-alt"></i> All Bookings</h1>
+        </div>
+        <div class="table-wrapper">
+            <table class="admin-table">
+                <thead>
+                    <tr><th>PNR</th><th>User</th><th>Route</th><th>Date</th><th>Seats</th><th>Amount</th><th>Status</th><th>Booked On</th></tr>
+                </thead>
+                <tbody>
+                    {% for b in bookings %}
+                    <tr>
+                        <td><strong>{{ b.pnr }}</strong></td>
+                        <td>{{ b.user.name }}<br><small>{{ b.user.email }}</small></td>
+                        <td>{{ b.schedule.route.source }} → {{ b.schedule.route.destination }}</td>
+                        <td>{{ b.schedule.travel_date.strftime('%d %b %Y') }}</td>
+                        <td>{{ b.num_seats }}</td>
+                        <td>₹{{ b.total_amount|int }}</td>
+                        <td><span class="status-badge status-{{ b.status|lower }}">{{ b.status }}</span></td>
+                        <td>{{ b.booking_date.strftime('%d %b %Y') }}</td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="8" class="text-center">No bookings yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block title %}Manage Schedules - Admin{% endblock %}
+{% block content %}
+<div class="admin-wrapper">
+    <aside class="admin-sidebar">
+        <div class="admin-brand"><i class="fas fa-cogs"></i> Admin Panel</div>
+        <nav class="admin-nav">
+            <a href="{{ url_for('admin.dashboard') }}" class="admin-nav-link"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+            <a href="{{ url_for('admin.buses') }}" class="admin-nav-link"><i class="fas fa-bus"></i> Buses</a>
+            <a href="{{ url_for('admin.routes') }}" class="admin-nav-link"><i class="fas fa-route"></i> Routes</a>
+            <a href="{{ url_for('admin.schedules') }}" class="admin-nav-link active"><i class="fas fa-calendar-alt"></i> Schedules</a>
+            <a href="{{ url_for('admin.bookings') }}" class="admin-nav-link"><i class="fas fa-ticket-alt"></i> Bookings</a>
+            <a href="{{ url_for('admin.users') }}" class="admin-nav-link"><i class="fas fa-users"></i> Users</a>
+        </nav>
+    </aside>
+    <div class="admin-content">
+        <div class="admin-topbar">
+            <h1><i class="fas fa-calendar-alt"></i> Manage Schedules</h1>
+            <a href="{{ url_for('admin.add_schedule') }}" class="btn-primary"><i class="fas fa-plus"></i> Add Schedule</a>
+        </div>
+        <div class="table-wrapper">
+            <table class="admin-table">
+                <thead>
+                    <tr><th>#</th><th>Bus</th><th>Route</th><th>Date</th><th>Departure</th><th>Arrival</th><th>Price</th><th>Available</th><th>Action</th></tr>
+                </thead>
+                <tbody>
+                    {% for s in schedules %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ s.bus.bus_name }}</td>
+                        <td>{{ s.route.source }} → {{ s.route.destination }}</td>
+                        <td>{{ s.travel_date.strftime('%d %b %Y') }}</td>
+                        <td>{{ s.departure_time.strftime('%I:%M %p') }}</td>
+                        <td>{{ s.arrival_time.strftime('%I:%M %p') }}</td>
+                        <td>₹{{ s.price|int }}</td>
+                        <td>
+                            <span class="{% if s.available_seats < 10 %}seats-low{% endif %}">{{ s.available_seats }}</span>
+                        </td>
+                        <td>
+                            <form method="POST" action="{{ url_for('admin.delete_schedule', schedule_id=s.id) }}" style="display:inline"
+                                  onsubmit="return confirm('Delete this schedule?')">
+                                <button type="submit" class="btn-sm btn-cancel">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="9" class="text-center">No schedules added yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

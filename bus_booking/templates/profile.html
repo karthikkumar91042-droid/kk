@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block title %}Profile - BusGo{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h2><i class="fas fa-user-circle"></i> My Profile</h2>
+    </div>
+</div>
+<div class="container profile-container">
+    <div class="profile-card">
+        <div class="profile-avatar">
+            <div class="avatar-circle">{{ current_user.name[0]|upper }}</div>
+        </div>
+        <div class="profile-info">
+            <h2>{{ current_user.name }}</h2>
+            <p class="profile-email"><i class="fas fa-envelope"></i> {{ current_user.email }}</p>
+            <p class="profile-phone"><i class="fas fa-phone"></i> {{ current_user.phone }}</p>
+            <p class="profile-since"><i class="fas fa-calendar-alt"></i> Member since {{ current_user.created_at.strftime('%B %Y') }}</p>
+            {% if current_user.is_admin %}
+            <span class="admin-badge"><i class="fas fa-crown"></i> Administrator</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="profile-stats">
+        {% set confirmed = current_user.bookings|selectattr('status', 'equalto', 'Confirmed')|list %}
+        {% set cancelled = current_user.bookings|selectattr('status', 'equalto', 'Cancelled')|list %}
+        <div class="profile-stat">
+            <div class="profile-stat-num">{{ current_user.bookings|length }}</div>
+            <div class="profile-stat-label">Total Bookings</div>
+        </div>
+        <div class="profile-stat">
+            <div class="profile-stat-num">{{ confirmed|length }}</div>
+            <div class="profile-stat-label">Active Bookings</div>
+        </div>
+        <div class="profile-stat">
+            <div class="profile-stat-num">₹{{ current_user.bookings|sum(attribute='total_amount')|int }}</div>
+            <div class="profile-stat-label">Total Spent</div>
+        </div>
+        <div class="profile-stat">
+            <div class="profile-stat-num">{{ cancelled|length }}</div>
+            <div class="profile-stat-label">Cancelled</div>
+        </div>
+    </div>
+
+    <div class="profile-actions">
+        <a href="{{ url_for('main.my_bookings') }}" class="btn-primary">
+            <i class="fas fa-ticket-alt"></i> View My Bookings
+        </a>
+        <a href="{{ url_for('main.index') }}" class="btn-secondary">
+            <i class="fas fa-search"></i> Book New Ticket
+        </a>
+    </div>
+</div>
+{% endblock %}

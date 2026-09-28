@@ -1,0 +1,212 @@
+{% extends 'base.html' %}
+{% block title %}BusGo - Book Bus Tickets Online{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero">
+    <div class="hero-particles" id="particles"></div>
+    <div class="hero-content">
+        <div class="hero-badge">
+            <i class="fas fa-star"></i> India's #1 Bus Booking Platform
+        </div>
+        <h1 class="hero-title">Travel Smarter,<br><span class="gradient-text">Book Faster</span></h1>
+        <p class="hero-subtitle">Search hundreds of bus routes, compare prices, and book tickets in seconds.</p>
+
+        <!-- Search Form -->
+        <div class="search-card">
+            <form action="{{ url_for('main.search') }}" method="GET" class="search-form" id="searchForm">
+                <div class="search-grid">
+                    <div class="search-field">
+                        <label for="source"><i class="fas fa-map-marker-alt"></i> From</label>
+                        <select name="source" id="source" required>
+                            <option value="">Select City</option>
+                            {% for city in cities %}
+                            <option value="{{ city }}">{{ city }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <button type="button" class="swap-btn" onclick="swapCities()" title="Swap cities">
+                        <i class="fas fa-exchange-alt"></i>
+                    </button>
+
+                    <div class="search-field">
+                        <label for="destination"><i class="fas fa-map-pin"></i> To</label>
+                        <select name="destination" id="destination" required>
+                            <option value="">Select City</option>
+                            {% for city in cities %}
+                            <option value="{{ city }}">{{ city }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="search-field">
+                        <label for="travel_date"><i class="fas fa-calendar-alt"></i> Date</label>
+                        <input type="date" name="travel_date" id="travel_date" required
+                               min="{{ now }}" value="{{ now }}">
+                    </div>
+
+                    <div class="search-field">
+                        <label for="num_seats"><i class="fas fa-users"></i> Passengers</label>
+                        <select name="num_seats" id="num_seats">
+                            {% for i in range(1, 7) %}
+                            <option value="{{ i }}">{{ i }} Seat{% if i > 1 %}s{% endif %}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-search" id="searchBtn">
+                    <i class="fas fa-search"></i> Search Buses
+                </button>
+            </form>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Section -->
+<section class="stats-section">
+    <div class="stats-grid">
+        <div class="stat-card">
+            <i class="fas fa-bus stat-icon"></i>
+            <div class="stat-number" data-target="500">0</div>
+            <div class="stat-label">Buses Available</div>
+        </div>
+        <div class="stat-card">
+            <i class="fas fa-route stat-icon"></i>
+            <div class="stat-number" data-target="200">0</div>
+            <div class="stat-label">Routes Covered</div>
+        </div>
+        <div class="stat-card">
+            <i class="fas fa-users stat-icon"></i>
+            <div class="stat-number" data-target="50000">0</div>
+            <div class="stat-label">Happy Travellers</div>
+        </div>
+        <div class="stat-card">
+            <i class="fas fa-city stat-icon"></i>
+            <div class="stat-number" data-target="100">0</div>
+            <div class="stat-label">Cities Connected</div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="features-section">
+    <div class="section-header">
+        <h2>Why Choose <span class="gradient-text">BusGo?</span></h2>
+        <p>Experience the best in class bus booking with features designed for modern travellers</p>
+    </div>
+    <div class="features-grid">
+        <div class="feature-card">
+            <div class="feature-icon"><i class="fas fa-bolt"></i></div>
+            <h3>Instant Booking</h3>
+            <p>Book your seats in seconds with our lightning-fast booking engine.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon"><i class="fas fa-shield-alt"></i></div>
+            <h3>Secure Payments</h3>
+            <p>Your transactions are protected with bank-grade encryption.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon"><i class="fas fa-couch"></i></div>
+            <h3>Seat Selection</h3>
+            <p>Choose your preferred seat with our interactive seat map.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon"><i class="fas fa-headset"></i></div>
+            <h3>24/7 Support</h3>
+            <p>Round the clock customer support for a hassle-free journey.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon"><i class="fas fa-ticket-alt"></i></div>
+            <h3>Easy Cancellation</h3>
+            <p>Cancel anytime with a simple one-click cancellation process.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon"><i class="fas fa-bell"></i></div>
+            <h3>Live Tracking</h3>
+            <p>Track your bus in real-time and never miss your boarding point.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Popular Routes Section -->
+<section class="popular-routes-section">
+    <div class="section-header">
+        <h2>Popular <span class="gradient-text">Routes</span></h2>
+        <p>Most booked bus routes across India</p>
+    </div>
+    <div class="routes-grid">
+        {% set popular = [
+            ('Bangalore', 'Chennai', '350 km', '850'),
+            ('Mumbai', 'Pune', '150 km', '350'),
+            ('Delhi', 'Agra', '200 km', '600'),
+            ('Hyderabad', 'Bangalore', '570 km', '950'),
+            ('Chennai', 'Hyderabad', '630 km', '700'),
+            ('Pune', 'Mumbai', '150 km', '350')
+        ] %}
+        {% for src, dst, dist, price in popular %}
+        <a href="{{ url_for('main.search', source=src, destination=dst, travel_date=now, num_seats=1) }}" class="route-card">
+            <div class="route-cities">
+                <span class="route-city">{{ src }}</span>
+                <i class="fas fa-long-arrow-alt-right route-arrow"></i>
+                <span class="route-city">{{ dst }}</span>
+            </div>
+            <div class="route-meta">
+                <span><i class="fas fa-road"></i> {{ dist }}</span>
+                <span class="route-price">from ₹{{ price }}</span>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Set min date to today
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('travel_date').min = today;
+    if (!document.getElementById('travel_date').value) {
+        document.getElementById('travel_date').value = today;
+    }
+
+    function swapCities() {
+        const src = document.getElementById('source');
+        const dst = document.getElementById('destination');
+        const temp = src.value;
+        src.value = dst.value;
+        dst.value = temp;
+        // Animate swap button
+        const btn = document.querySelector('.swap-btn');
+        btn.style.transform = 'rotate(180deg)';
+        setTimeout(() => btn.style.transform = '', 300);
+    }
+
+    // Animated counters
+    function animateCounter(el) {
+        const target = parseInt(el.dataset.target);
+        const duration = 2000;
+        const step = target / (duration / 16);
+        let current = 0;
+        const timer = setInterval(() => {
+            current += step;
+            if (current >= target) {
+                current = target;
+                clearInterval(timer);
+            }
+            el.textContent = Math.floor(current).toLocaleString() + '+';
+        }, 16);
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(e => {
+            if (e.isIntersecting) {
+                animateCounter(e.target);
+                observer.unobserve(e.target);
+            }
+        });
+    });
+    document.querySelectorAll('.stat-number').forEach(el => observer.observe(el));
+</script>
+{% endblock %}

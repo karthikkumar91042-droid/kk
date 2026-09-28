@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+{% block title %}Admin Dashboard - BusGo{% endblock %}
+
+{% block content %}
+<div class="admin-wrapper">
+    <!-- Admin Sidebar -->
+    <aside class="admin-sidebar">
+        <div class="admin-brand">
+            <i class="fas fa-cogs"></i> Admin Panel
+        </div>
+        <nav class="admin-nav">
+            <a href="{{ url_for('admin.dashboard') }}" class="admin-nav-link active">
+                <i class="fas fa-tachometer-alt"></i> Dashboard
+            </a>
+            <a href="{{ url_for('admin.buses') }}" class="admin-nav-link">
+                <i class="fas fa-bus"></i> Buses
+            </a>
+            <a href="{{ url_for('admin.routes') }}" class="admin-nav-link">
+                <i class="fas fa-route"></i> Routes
+            </a>
+            <a href="{{ url_for('admin.schedules') }}" class="admin-nav-link">
+                <i class="fas fa-calendar-alt"></i> Schedules
+            </a>
+            <a href="{{ url_for('admin.bookings') }}" class="admin-nav-link">
+                <i class="fas fa-ticket-alt"></i> Bookings
+            </a>
+            <a href="{{ url_for('admin.users') }}" class="admin-nav-link">
+                <i class="fas fa-users"></i> Users
+            </a>
+            <a href="{{ url_for('main.index') }}" class="admin-nav-link">
+                <i class="fas fa-external-link-alt"></i> View Site
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Admin Content -->
+    <div class="admin-content">
+        <div class="admin-topbar">
+            <h1><i class="fas fa-tachometer-alt"></i> Dashboard</h1>
+            <span class="admin-user"><i class="fas fa-user-shield"></i> {{ current_user.name }}</span>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="admin-stats-grid">
+            <div class="admin-stat-card blue">
+                <div class="admin-stat-icon"><i class="fas fa-users"></i></div>
+                <div class="admin-stat-info">
+                    <div class="admin-stat-num">{{ total_users }}</div>
+                    <div class="admin-stat-label">Total Users</div>
+                </div>
+            </div>
+            <div class="admin-stat-card green">
+                <div class="admin-stat-icon"><i class="fas fa-ticket-alt"></i></div>
+                <div class="admin-stat-info">
+                    <div class="admin-stat-num">{{ total_bookings }}</div>
+                    <div class="admin-stat-label">Total Bookings</div>
+                </div>
+            </div>
+            <div class="admin-stat-card purple">
+                <div class="admin-stat-icon"><i class="fas fa-bus"></i></div>
+                <div class="admin-stat-info">
+                    <div class="admin-stat-num">{{ total_buses }}</div>
+                    <div class="admin-stat-label">Buses</div>
+                </div>
+            </div>
+            <div class="admin-stat-card orange">
+                <div class="admin-stat-icon"><i class="fas fa-route"></i></div>
+                <div class="admin-stat-info">
+                    <div class="admin-stat-num">{{ total_routes }}</div>
+                    <div class="admin-stat-label">Routes</div>
+                </div>
+            </div>
+            <div class="admin-stat-card teal">
+                <div class="admin-stat-icon"><i class="fas fa-rupee-sign"></i></div>
+                <div class="admin-stat-info">
+                    <div class="admin-stat-num">₹{{ total_revenue|int }}</div>
+                    <div class="admin-stat-label">Total Revenue</div>
+                </div>
+            </div>
+            <div class="admin-stat-card red">
+                <div class="admin-stat-icon"><i class="fas fa-check-circle"></i></div>
+                <div class="admin-stat-info">
+                    <div class="admin-stat-num">{{ confirmed_bookings }}</div>
+                    <div class="admin-stat-label">Confirmed Bookings</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="admin-quick-actions">
+            <h2>Quick Actions</h2>
+            <div class="quick-actions-grid">
+                <a href="{{ url_for('admin.add_bus') }}" class="quick-action-btn">
+                    <i class="fas fa-plus-circle"></i> Add Bus
+                </a>
+                <a href="{{ url_for('admin.add_route') }}" class="quick-action-btn">
+                    <i class="fas fa-plus-circle"></i> Add Route
+                </a>
+                <a href="{{ url_for('admin.add_schedule') }}" class="quick-action-btn">
+                    <i class="fas fa-plus-circle"></i> Add Schedule
+                </a>
+                <a href="{{ url_for('admin.bookings') }}" class="quick-action-btn">
+                    <i class="fas fa-list"></i> View Bookings
+                </a>
+            </div>
+        </div>
+
+        <!-- Recent Bookings -->
+        <div class="admin-table-section">
+            <h2>Recent Bookings</h2>
+            <div class="table-wrapper">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>PNR</th><th>User</th><th>Route</th>
+                            <th>Date</th><th>Seats</th><th>Amount</th><th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for b in recent_bookings %}
+                        <tr>
+                            <td><strong>{{ b.pnr }}</strong></td>
+                            <td>{{ b.user.name }}</td>
+                            <td>{{ b.schedule.route.source }} → {{ b.schedule.route.destination }}</td>
+                            <td>{{ b.schedule.travel_date.strftime('%d %b %Y') }}</td>
+                            <td>{{ b.num_seats }}</td>
+                            <td>₹{{ b.total_amount|int }}</td>
+                            <td>
+                                <span class="status-badge status-{{ b.status|lower }}">{{ b.status }}</span>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="7" class="text-center">No bookings yet</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

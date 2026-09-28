@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block title %}Manage Routes - Admin{% endblock %}
+{% block content %}
+<div class="admin-wrapper">
+    <aside class="admin-sidebar">
+        <div class="admin-brand"><i class="fas fa-cogs"></i> Admin Panel</div>
+        <nav class="admin-nav">
+            <a href="{{ url_for('admin.dashboard') }}" class="admin-nav-link"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+            <a href="{{ url_for('admin.buses') }}" class="admin-nav-link"><i class="fas fa-bus"></i> Buses</a>
+            <a href="{{ url_for('admin.routes') }}" class="admin-nav-link active"><i class="fas fa-route"></i> Routes</a>
+            <a href="{{ url_for('admin.schedules') }}" class="admin-nav-link"><i class="fas fa-calendar-alt"></i> Schedules</a>
+            <a href="{{ url_for('admin.bookings') }}" class="admin-nav-link"><i class="fas fa-ticket-alt"></i> Bookings</a>
+            <a href="{{ url_for('admin.users') }}" class="admin-nav-link"><i class="fas fa-users"></i> Users</a>
+        </nav>
+    </aside>
+    <div class="admin-content">
+        <div class="admin-topbar">
+            <h1><i class="fas fa-route"></i> Manage Routes</h1>
+            <a href="{{ url_for('admin.add_route') }}" class="btn-primary"><i class="fas fa-plus"></i> Add Route</a>
+        </div>
+        <div class="table-wrapper">
+            <table class="admin-table">
+                <thead>
+                    <tr><th>#</th><th>Source</th><th>Destination</th><th>Distance (km)</th><th>Actions</th></tr>
+                </thead>
+                <tbody>
+                    {% for route in routes %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ route.source }}</td>
+                        <td>{{ route.destination }}</td>
+                        <td>{{ route.distance_km|int }} km</td>
+                        <td>
+                            <form method="POST" action="{{ url_for('admin.delete_route', route_id=route.id) }}" style="display:inline"
+                                  onsubmit="return confirm('Delete this route?')">
+                                <button type="submit" class="btn-sm btn-cancel">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="5" class="text-center">No routes added yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

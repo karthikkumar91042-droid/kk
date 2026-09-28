@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block title %}Edit Bus - Admin{% endblock %}
+{% block content %}
+<div class="admin-wrapper">
+    <aside class="admin-sidebar">
+        <div class="admin-brand"><i class="fas fa-cogs"></i> Admin Panel</div>
+        <nav class="admin-nav">
+            <a href="{{ url_for('admin.dashboard') }}" class="admin-nav-link"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+            <a href="{{ url_for('admin.buses') }}" class="admin-nav-link active"><i class="fas fa-bus"></i> Buses</a>
+            <a href="{{ url_for('admin.routes') }}" class="admin-nav-link"><i class="fas fa-route"></i> Routes</a>
+            <a href="{{ url_for('admin.schedules') }}" class="admin-nav-link"><i class="fas fa-calendar-alt"></i> Schedules</a>
+            <a href="{{ url_for('admin.bookings') }}" class="admin-nav-link"><i class="fas fa-ticket-alt"></i> Bookings</a>
+            <a href="{{ url_for('admin.users') }}" class="admin-nav-link"><i class="fas fa-users"></i> Users</a>
+        </nav>
+    </aside>
+    <div class="admin-content">
+        <div class="admin-topbar">
+            <h1><i class="fas fa-edit"></i> Edit Bus</h1>
+            <a href="{{ url_for('admin.buses') }}" class="btn-secondary"><i class="fas fa-arrow-left"></i> Back</a>
+        </div>
+        <div class="admin-form-card">
+            <form method="POST">
+                <div class="form-group">
+                    <label>Bus Number *</label>
+                    <input type="text" name="bus_number" value="{{ bus.bus_number }}" required>
+                </div>
+                <div class="form-group">
+                    <label>Bus Name *</label>
+                    <input type="text" name="bus_name" value="{{ bus.bus_name }}" required>
+                </div>
+                <div class="form-group">
+                    <label>Bus Type *</label>
+                    <select name="bus_type" required>
+                        {% for bt in ['AC Sleeper', 'Non-AC Seater', 'AC Semi-Sleeper', 'Sleeper', 'Volvo AC'] %}
+                        <option value="{{ bt }}" {% if bt == bus.bus_type %}selected{% endif %}>{{ bt }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Total Seats *</label>
+                    <input type="number" name="total_seats" value="{{ bus.total_seats }}" min="10" max="60" required>
+                </div>
+                <div class="form-group">
+                    <label>Amenities</label>
+                    <input type="text" name="amenities" value="{{ bus.amenities }}">
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary"><i class="fas fa-save"></i> Update Bus</button>
+                    <a href="{{ url_for('admin.buses') }}" class="btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

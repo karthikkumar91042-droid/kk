@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% block title %}My Bookings - BusGo{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h2><i class="fas fa-ticket-alt"></i> My Bookings</h2>
+        <p>Manage all your bus ticket bookings</p>
+    </div>
+</div>
+
+<div class="container">
+    {% if bookings %}
+    <div class="bookings-grid">
+        {% for booking in bookings %}
+        <div class="booking-item {% if booking.status == 'Cancelled' %}booking-cancelled{% endif %}">
+            <div class="booking-header">
+                <div class="booking-pnr">
+                    <span class="pnr-tag">PNR</span>
+                    <strong>{{ booking.pnr }}</strong>
+                </div>
+                <span class="booking-status status-{{ booking.status|lower }}">
+                    <i class="fas fa-{% if booking.status == 'Confirmed' %}check-circle{% else %}times-circle{% endif %}"></i>
+                    {{ booking.status }}
+                </span>
+            </div>
+
+            <div class="booking-route">
+                <div class="bk-city">
+                    <div class="bk-time">{{ booking.schedule.departure_time.strftime('%I:%M %p') }}</div>
+                    <div class="bk-city-name">{{ booking.schedule.route.source }}</div>
+                </div>
+                <div class="bk-arrow">
+                    <i class="fas fa-long-arrow-alt-right"></i>
+                    <div class="bk-date">{{ booking.schedule.travel_date.strftime('%d %b %Y') }}</div>
+                </div>
+                <div class="bk-city">
+                    <div class="bk-time">{{ booking.schedule.arrival_time.strftime('%I:%M %p') }}</div>
+                    <div class="bk-city-name">{{ booking.schedule.route.destination }}</div>
+                </div>
+            </div>
+
+            <div class="booking-meta">
+                <span><i class="fas fa-bus"></i> {{ booking.schedule.bus.bus_name }}</span>
+                <span><i class="fas fa-chair"></i> {{ booking.num_seats }} Seat{% if booking.num_seats > 1 %}s{% endif %}</span>
+                <span><i class="fas fa-rupee-sign"></i> ₹{{ booking.total_amount|int }}</span>
+                <span><i class="fas fa-clock"></i> {{ booking.booking_date.strftime('%d %b %Y %I:%M %p') }}</span>
+            </div>
+
+            <div class="booking-seats">
+                {% for p in booking.passengers %}
+                <span class="seat-tag">{{ p.seat_number }} - {{ p.name }}</span>
+                {% endfor %}
+            </div>
+
+            <div class="booking-actions">
+                <a href="{{ url_for('main.booking_confirmation', pnr=booking.pnr) }}" class="btn-sm btn-view">
+                    <i class="fas fa-eye"></i> View Ticket
+                </a>
+                {% if booking.status == 'Confirmed' %}
+                <form method="POST" action="{{ url_for('main.cancel_booking', booking_id=booking.id) }}"
+                      onsubmit="return confirm('Are you sure you want to cancel this booking?')">
+                    <button type="submit" class="btn-sm btn-cancel">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon"><i class="fas fa-ticket-alt"></i></div>
+        <h3>No Bookings Yet</h3>
+        <p>You haven't made any bookings. Start by searching for buses!</p>
+        <a href="{{ url_for('main.index') }}" class="btn-primary"><i class="fas fa-search"></i> Search Buses</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

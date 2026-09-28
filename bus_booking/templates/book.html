@@ -1,0 +1,177 @@
+{% extends 'base.html' %}
+{% block title %}Book Seats - BusGo{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h2><i class="fas fa-couch"></i> Select Your Seats</h2>
+        <p>{{ schedule.route.source }} → {{ schedule.route.destination }} | {{ schedule.travel_date.strftime('%d %b %Y') }}</p>
+    </div>
+</div>
+
+<div class="container booking-container">
+    <div class="booking-grid">
+        <!-- Left: Seat Map -->
+        <div class="seat-section">
+            <div class="seat-legend">
+                <span class="legend-item"><span class="seat-demo available"></span> Available</span>
+                <span class="legend-item"><span class="seat-demo booked"></span> Booked</span>
+                <span class="legend-item"><span class="seat-demo selected"></span> Selected</span>
+            </div>
+
+            <div class="bus-layout">
+                <div class="bus-front">
+                    <i class="fas fa-steering-wheel"></i> Driver
+                </div>
+                <div class="seat-grid" id="seatGrid">
+                    {% set total = total_seats %}
+                    {% set cols = 5 %}
+                    {% set rows = (total // cols) + (1 if total % cols != 0 else 0) %}
+                    {% for row in range(rows) %}
+                    <div class="seat-row">
+                        {% for col in range(cols) %}
+                        {% set seat_num = row * cols + col + 1 %}
+                        {% if seat_num <= total %}
+                            {% set seat_id = 'S' + seat_num|string %}
+                            {% if seat_id in booked_seats %}
+                            <div class="seat booked" data-seat="{{ seat_id }}" title="Booked">
+                                <i class="fas fa-chair"></i>
+                                <span>{{ seat_id }}</span>
+                            </div>
+                            {% else %}
+                            <div class="seat available" data-seat="{{ seat_id }}"
+                                 onclick="toggleSeat(this)" title="Select {{ seat_id }}">
+                                <i class="fas fa-chair"></i>
+                                <span>{{ seat_id }}</span>
+                            </div>
+                            {% endif %}
+                        {% else %}
+                            <div class="seat-placeholder"></div>
+                        {% endif %}
+                        {% if col == 1 %}<div class="aisle"></div>{% endif %}
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="seats-to-select">
+                Please select <strong id="remainingCount">{{ num_seats }}</strong> more seat(s)
+            </div>
+        </div>
+
+        <!-- Right: Passenger Form -->
+        <div class="passenger-section">
+            <div class="booking-summary-card">
+                <h3><i class="fas fa-info-circle"></i> Journey Details</h3>
+                <table class="summary-table">
+                    <tr><td>Bus</td><td>{{ schedule.bus.bus_name }}</td></tr>
+                    <tr><td>Type</td><td>{{ schedule.bus.bus_type }}</td></tr>
+                    <tr><td>From</td><td>{{ schedule.route.source }}</td></tr>
+                    <tr><td>To</td><td>{{ schedule.route.destination }}</td></tr>
+                    <tr><td>Date</td><td>{{ schedule.travel_date.strftime('%d %b %Y') }}</td></tr>
+                    <tr><td>Departure</td><td>{{ schedule.departure_time.strftime('%I:%M %p') }}</td></tr>
+                    <tr><td>Arrival</td><td>{{ schedule.arrival_time.strftime('%I:%M %p') }}</td></tr>
+                    <tr><td>Fare/Seat</td><td>₹{{ schedule.price|int }}</td></tr>
+                    <tr class="total-row">
+                        <td>Total Amount</td>
+                        <td><strong id="totalDisplay">₹{{ (schedule.price * num_seats)|int }}</strong></td>
+                    </tr>
+                </table>
+            </div>
+
+            <form method="POST" action="{{ url_for('main.book', schedule_id=schedule.id, num_seats=num_seats) }}"
+                  id="bookingForm" class="passenger-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}">
+                <h3><i class="fas fa-users"></i> Passenger Details</h3>
+
+                {% for i in range(num_seats) %}
+                <div class="passenger-card" id="passengerCard{{ i }}">
+                    <div class="passenger-header">
+                        <span class="passenger-num">Passenger {{ i + 1 }}</span>
+                        <span class="seat-label" id="seatLabel{{ i }}">No seat selected</span>
+                        <input type="hidden" name="seat_number" id="seatInput{{ i }}" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Full Name *</label>
+                            <input type="text" name="passenger_name" placeholder="Enter name" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Age *</label>
+                            <input type="number" name="passenger_age" min="1" max="120" placeholder="Age" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Gender *</label>
+                            <select name="passenger_gender" required>
+                                <option value="">Select</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+
+                <div class="contact-card">
+                    <h3><i class="fas fa-phone"></i> Contact Details</h3>
+                    <p><strong>{{ current_user.name }}</strong> | {{ current_user.email }} | {{ current_user.phone }}</p>
+                    <small>Booking confirmation will be sent to the above details</small>
+                </div>
+
+                <button type="submit" class="btn-confirm" id="confirmBtn" disabled>
+                    <i class="fas fa-lock"></i> Confirm Booking · <span id="btnTotal">₹{{ (schedule.price * num_seats)|int }}</span>
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const maxSeats = {{ num_seats }};
+    const pricePerSeat = {{ schedule.price }};
+    let selectedSeats = [];
+
+    function toggleSeat(el) {
+        const seatId = el.dataset.seat;
+        if (el.classList.contains('selected')) {
+            el.classList.remove('selected');
+            el.classList.add('available');
+            selectedSeats = selectedSeats.filter(s => s !== seatId);
+        } else {
+            if (selectedSeats.length >= maxSeats) {
+                alert(`You can only select ${maxSeats} seat(s).`);
+                return;
+            }
+            el.classList.remove('available');
+            el.classList.add('selected');
+            selectedSeats.push(seatId);
+        }
+        updatePassengerCards();
+    }
+
+    function updatePassengerCards() {
+        const remaining = maxSeats - selectedSeats.length;
+        document.getElementById('remainingCount').textContent = remaining;
+
+        for (let i = 0; i < maxSeats; i++) {
+            const label = document.getElementById('seatLabel' + i);
+            const input = document.getElementById('seatInput' + i);
+            if (selectedSeats[i]) {
+                label.textContent = 'Seat: ' + selectedSeats[i];
+                label.style.color = '#10b981';
+                input.value = selectedSeats[i];
+            } else {
+                label.textContent = 'No seat selected';
+                label.style.color = '#ef4444';
+                input.value = '';
+            }
+        }
+
+        const allSelected = selectedSeats.length === maxSeats;
+        document.getElementById('confirmBtn').disabled = !allSelected;
+    }
+</script>
+{% endblock %}

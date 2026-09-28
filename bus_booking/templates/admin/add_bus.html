@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% block title %}Add Bus - Admin{% endblock %}
+{% block content %}
+<div class="admin-wrapper">
+    <aside class="admin-sidebar">
+        <div class="admin-brand"><i class="fas fa-cogs"></i> Admin Panel</div>
+        <nav class="admin-nav">
+            <a href="{{ url_for('admin.dashboard') }}" class="admin-nav-link"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+            <a href="{{ url_for('admin.buses') }}" class="admin-nav-link active"><i class="fas fa-bus"></i> Buses</a>
+            <a href="{{ url_for('admin.routes') }}" class="admin-nav-link"><i class="fas fa-route"></i> Routes</a>
+            <a href="{{ url_for('admin.schedules') }}" class="admin-nav-link"><i class="fas fa-calendar-alt"></i> Schedules</a>
+            <a href="{{ url_for('admin.bookings') }}" class="admin-nav-link"><i class="fas fa-ticket-alt"></i> Bookings</a>
+            <a href="{{ url_for('admin.users') }}" class="admin-nav-link"><i class="fas fa-users"></i> Users</a>
+        </nav>
+    </aside>
+    <div class="admin-content">
+        <div class="admin-topbar">
+            <h1><i class="fas fa-plus-circle"></i> Add New Bus</h1>
+            <a href="{{ url_for('admin.buses') }}" class="btn-secondary"><i class="fas fa-arrow-left"></i> Back</a>
+        </div>
+        <div class="admin-form-card">
+            <form method="POST">
+                <div class="form-group">
+                    <label>Bus Number *</label>
+                    <input type="text" name="bus_number" placeholder="e.g. KA01AB1234" required>
+                </div>
+                <div class="form-group">
+                    <label>Bus Name *</label>
+                    <input type="text" name="bus_name" placeholder="e.g. Karnataka Express" required>
+                </div>
+                <div class="form-group">
+                    <label>Bus Type *</label>
+                    <select name="bus_type" required>
+                        <option value="">Select Type</option>
+                        <option value="AC Sleeper">AC Sleeper</option>
+                        <option value="Non-AC Seater">Non-AC Seater</option>
+                        <option value="AC Semi-Sleeper">AC Semi-Sleeper</option>
+                        <option value="Sleeper">Sleeper</option>
+                        <option value="Volvo AC">Volvo AC</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Total Seats *</label>
+                    <input type="number" name="total_seats" min="10" max="60" placeholder="e.g. 40" required>
+                </div>
+                <div class="form-group">
+                    <label>Amenities</label>
+                    <input type="text" name="amenities" placeholder="WiFi, Charging Port, Blanket (comma separated)">
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary"><i class="fas fa-save"></i> Add Bus</button>
+                    <a href="{{ url_for('admin.buses') }}" class="btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

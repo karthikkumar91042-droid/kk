@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+{% block title %}Search Results - BusGo{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <div class="route-banner">
+            <h2><i class="fas fa-map-marker-alt"></i> {{ source }}
+                <i class="fas fa-long-arrow-alt-right mx-2"></i>
+                {{ destination }}</h2>
+            <p><i class="fas fa-calendar-alt"></i> {{ travel_date }} &nbsp;|&nbsp;
+               <i class="fas fa-users"></i> {{ num_seats }} Seat{% if num_seats > 1 %}s{% endif %}</p>
+        </div>
+        <!-- Modify Search -->
+        <div class="modify-search">
+            <form action="{{ url_for('main.search') }}" method="GET" class="modify-form">
+                <input type="text" name="source" value="{{ source }}" placeholder="From" required>
+                <input type="text" name="destination" value="{{ destination }}" placeholder="To" required>
+                <input type="date" name="travel_date" value="{{ travel_date }}" required>
+                <select name="num_seats">
+                    {% for i in range(1, 7) %}
+                    <option value="{{ i }}" {% if i == num_seats %}selected{% endif %}>{{ i }} Seat{% if i > 1 %}s{% endif %}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="btn-primary"><i class="fas fa-search"></i> Update</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="container results-container">
+    {% if schedules %}
+    <div class="results-header">
+        <span class="results-count"><strong>{{ schedules|length }}</strong> buses found</span>
+        <div class="filter-chips">
+            <span class="chip active">All</span>
+            <span class="chip" onclick="filterType('AC Sleeper')">AC Sleeper</span>
+            <span class="chip" onclick="filterType('Non-AC Seater')">Non-AC</span>
+            <span class="chip" onclick="filterType('Volvo')">Volvo</span>
+        </div>
+    </div>
+
+    <div class="bus-list" id="busList">
+        {% for schedule in schedules %}
+        <div class="bus-card" data-type="{{ schedule.bus.bus_type }}">
+            <div class="bus-card-header">
+                <div class="bus-info">
+                    <div class="bus-name-row">
+                        <h3>{{ schedule.bus.bus_name }}</h3>
+                        <span class="bus-type-badge {{ schedule.bus.bus_type|lower|replace(' ', '-') }}">
+                            {{ schedule.bus.bus_type }}
+                        </span>
+                    </div>
+                    <p class="bus-number"><i class="fas fa-hashtag"></i> {{ schedule.bus.bus_number }}</p>
+                </div>
+                <div class="bus-price-block">
+                    <div class="bus-price">₹{{ schedule.price|int }}</div>
+                    <div class="per-seat">per seat</div>
+                </div>
+            </div>
+
+            <div class="bus-card-body">
+                <div class="journey-timeline">
+                    <div class="journey-point">
+                        <div class="journey-time">{{ schedule.departure_time.strftime('%I:%M %p') }}</div>
+                        <div class="journey-city">{{ schedule.route.source }}</div>
+                    </div>
+                    <div class="journey-line">
+                        <div class="journey-duration">
+                            <i class="fas fa-bus"></i>
+                        </div>
+                        <div class="journey-dist">{{ schedule.route.distance_km|int }} km</div>
+                    </div>
+                    <div class="journey-point">
+                        <div class="journey-time">{{ schedule.arrival_time.strftime('%I:%M %p') }}</div>
+                        <div class="journey-city">{{ schedule.route.destination }}</div>
+                    </div>
+                </div>
+
+                <div class="bus-amenities">
+                    {% if schedule.bus.amenities %}
+                    {% for amenity in schedule.bus.amenities.split(',') %}
+                    <span class="amenity-tag">
+                        {% if 'WiFi' in amenity %}<i class="fas fa-wifi"></i>
+                        {% elif 'Charging' in amenity %}<i class="fas fa-bolt"></i>
+                        {% elif 'Blanket' in amenity %}<i class="fas fa-cloud"></i>
+                        {% elif 'Water' in amenity %}<i class="fas fa-tint"></i>
+                        {% elif 'Snack' in amenity %}<i class="fas fa-cookie"></i>
+                        {% else %}<i class="fas fa-check"></i>{% endif %}
+                        {{ amenity.strip() }}
+                    </span>
+                    {% endfor %}
+                    {% endif %}
+                </div>
+
+                <div class="bus-card-footer">
+                    <div class="seats-info">
+                        <span class="seats-available {% if schedule.available_seats < 10 %}seats-low{% endif %}">
+                            <i class="fas fa-chair"></i>
+                            {{ schedule.available_seats }} seats left
+                        </span>
+                    </div>
+                    <div class="total-preview">
+                        Total: <strong>₹{{ (schedule.price * num_seats)|int }}</strong> for {{ num_seats }} seat{% if num_seats > 1 %}s{% endif %}
+                    </div>
+                    <a href="{{ url_for('main.book', schedule_id=schedule.id, num_seats=num_seats) }}"
+                       class="btn-book">
+                        <i class="fas fa-ticket-alt"></i> Select Seats
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% else %}
+    <div class="no-results">
+        <div class="no-results-icon"><i class="fas fa-bus-slash"></i></div>
+        <h3>No Buses Found</h3>
+        <p>No buses available for <strong>{{ source }} → {{ destination }}</strong> on <strong>{{ travel_date }}</strong> for {{ num_seats }} seat(s).</p>
+        <a href="{{ url_for('main.index') }}" class="btn-primary">Try Another Search</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function filterType(type) {
+    document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+    event.target.classList.add('active');
+    document.querySelectorAll('.bus-card').forEach(card => {
+        if (card.dataset.type.includes(type)) {
+            card.style.display = 'block';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+}
+</script>
+{% endblock %}
